@@ -4,7 +4,7 @@ namespace Putty;
 
 use \Putty\Exceptions;
 
-abstract class PuttyContainer {
+abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
     private $Bindings = array();
     
     final public static function Instance() {
@@ -18,12 +18,11 @@ abstract class PuttyContainer {
         $this->Initialize();
     }
 
-    protected abstract function RegisterModules(array &$Registrar);
+    protected abstract function RegisterModules();
     
     private function Initialize() {
-        $ModuleRegistrar = array();
-        $this->RegisterModules($ModuleRegistrar);
-        foreach ($ModuleRegistrar as $Module) {
+        $this->RegisterModules();
+        foreach ($this->Modules as $Module) {
             if(!($Module instanceof PuttyModule))
                 throw new Exceptions\InvalidModuleException();
             
