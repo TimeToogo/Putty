@@ -100,7 +100,7 @@ abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
     }
     
     private function ResolveBinding(Binding $Binding) {
-        if($Binding->IsSingleton())
+        if($Binding->IsSingleton() && $Binding->IsSingletonResolved())
             return $Binding->GetSingletonInstance();
         
         $Reflection = $Binding->BoundTo();

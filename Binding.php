@@ -104,6 +104,9 @@ class Binding {
             throw new \LogicException('This binding is not a singleton binding');
         $this->SingletonInstance = $Instance;
     }
+    public function IsSingletonResolved(){
+        return $this->SingletonInstance !== null;
+    }
     public function GetSingletonInstance() {
         if(!$this->IsSingleton)
             throw new \LogicException('This binding is not a singleton binding');
