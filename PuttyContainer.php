@@ -97,7 +97,7 @@ abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
             $ConstructorParameters = $ConstructorInfo->getParameters();
 
             $ResolvedConstructorParameters = $this->ResolveConstructorParameters
-                    ($Reflection, $ConstructorParameters);
+                    ($Class, $ConstructorParameters);
 
             return $Reflection->newInstanceArgs($ResolvedConstructorParameters);
         }
@@ -139,7 +139,8 @@ abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
             $ConstructorParameters = $ConstructorInfo->getParameters();
 
             $ResolvedConstructorParameters = $this->ResolveConstructorParameters
-                    ($Reflection, $ConstructorParameters, $Binding->GetConstantConstructorArgs());
+                    ($Reflection->getName(), $ConstructorParameters, 
+                    $Binding->GetConstantConstructorArgs());
 
             return $Reflection->newInstanceArgs($ResolvedConstructorParameters);
         };
@@ -147,9 +148,8 @@ abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
         return $Factory;
     }
     
-    private function ResolveConstructorParameters(\ReflectionClass $Reflection, 
-            array $ConstructorParameters, array $ConstantConstructorParameters = array()) {
-        
+    private function ResolveConstructorParameters($Class, array $ConstructorParameters, 
+            array $ConstantConstructorParameters = array()) {
         $ResolvedConstructorParameters = array();
         foreach ($ConstructorParameters as $ConstructorParameter) {
             if(array_key_exists($ConstructorParameter->name, $ConstantConstructorParameters)) {
@@ -163,14 +163,14 @@ abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
             
             $ParameterType = $ConstructorParameter->getClass();
             if($ParameterType === null)
-                throw new Exceptions\UnresolveableClassException($Reflection->getName(), 
+                throw new Exceptions\UnresolveableClassException($Class, 
                         'There is no defined parameter type or default value for constructor 
                             parameter: ' . $ConstructorParameter->name);
             
-            $MatchedBinding = $this->GetMatchedBinding($Reflection->getName(), 
+            $MatchedBinding = $this->GetMatchedBinding($Class, 
                     $ParameterType->getName());
             if($MatchedBinding === null)
-                throw new Exceptions\UnresolveableClassException($Reflection->getName(), 
+                throw new Exceptions\UnresolveableClassException($Class, 
                         'Could not find a suitable binding for constructor parameter: ' . 
                         $ParameterType->getName());
             
