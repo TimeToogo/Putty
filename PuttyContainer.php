@@ -5,7 +5,8 @@ namespace Putty;
 use \Putty\Exceptions;
 
 abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
-    private $Bindings = array();
+    private $ClassBindings = array();
+    private $ConstantBindings = array();
     
     final public static function Instance() {
         static $Instance = null;
@@ -26,41 +27,46 @@ abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
             if(!($Module instanceof PuttyModule))
                 throw new Exceptions\InvalidModuleException();
             
-            foreach ($Module->GetBindings() as $Binding) {
-                $this->AddBinding($Binding);
+            foreach ($Module->GetClassBindings() as $Binding) {
+                $this->AddClassBinding($Binding);
             }
             
-            $this->ResolveSingletons();
+            foreach ($Module->GetConstantBindings() as $ConstantBinding) {
+                $this->AddConstantBinding($ConstantBinding);
+            }
         }
     }
     
-    private function AddBinding(Binding $Binding) {
-        $ParentName = $Binding->GetParentClassOrInterface()->getName();
-        foreach ($this->Bindings as $OtherBinding) {
-            if($OtherBinding->GetParentClassOrInterface()->getName() === $ParentName) {
+    private function GetAllBindings() {
+        return array_merge($this->ClassBindings, $this->ConstantBindings);
+    }
+
+    private function AddClassBinding(Bindings\ClassBinding $ClassBinding) {
+        $this->VerifyNotAmbiguousBinding($ClassBinding);
+        $this->ClassBindings[] = $ClassBinding;
+    }
+    
+    private function AddConstantBinding(Bindings\ConstantBinding $ConstantBinding) {
+        $this->VerifyNotAmbiguousBinding($ConstantBinding);
+        $this->ConstantBindings[] = $ConstantBinding;
+    }
+    
+    private function VerifyNotAmbiguousBinding(Bindings\ConstrainedBinding $Binding) {
+        $ParentName = $Binding->GetParentType();
+        foreach ($this->GetAllBindings() as $OtherBinding) {
+            if($OtherBinding->GetParentType() === $ParentName) {
                 if(!$Binding->IsConstrained() && !$Binding->IsConstrained()){
                     throw new Exceptions\AmbiguousBindingsException(
                             'Multiple unconstrained bindings to type: ' . $ParentName);
                 }
             }
         }
-        $this->Bindings[] = $Binding;
     }
     
-    private function ResolveSingletons() {
-        foreach ($this->Bindings as $Binding) {
-            if($Binding->IsSingleton()) {
-                $Binding->ResolveSingleton($this->ResolveBinding($Binding));
-            }
-        }
-    }
-    
-    private function GetMatchedBinding($Class,  \ReflectionClass $ParentClassOrInterface) {
+    private function GetMatchedBinding($Class, $ParentType) {
         $MatchedBinding = null;
-        foreach ($this->Bindings as $Binding) {
-            if($Binding->GetParentClassOrInterface()->getName() 
-                    === $ParentClassOrInterface->getName()) {
-                
+        foreach ($this->GetAllBindings() as $Binding) {
+            if($Binding->GetParentType() === $ParentType) {
                 if($Binding->Matches($Class)) {
                     $MatchedBinding = $Binding;
                 }
@@ -76,15 +82,16 @@ abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
     
     public function Resolve($Class) {
         try
-        {;
+        {
             $Reflection = new \ReflectionClass($Class);
             
-            $MatchedBinding = $this->GetMatchedBinding(null, $Reflection);
+            $MatchedBinding = $this->GetMatchedBinding(null, $Class);
             if($MatchedBinding !== null)
                 return $this->ResolveBinding($MatchedBinding);
             
             if(!$Reflection->isInstantiable())
-                throw new Exceptions\UnresolveableClassException($Reflection->getName());
+                throw new Exceptions\UnresolveableClassException($Class, 
+                        'Class Must be instantiable');
 
             $ConstructorInfo = $Reflection->getConstructor();
             $ConstructorParameters = $ConstructorInfo->getParameters();
@@ -99,33 +106,55 @@ abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
         }
     }
     
-    private function ResolveBinding(Binding $Binding) {
-        if($Binding->IsSingleton() && $Binding->IsSingletonResolved())
-            return $Binding->GetSingletonInstance();
+    private function ResolveBinding(Bindings\Binding $Binding) {
+        if($Binding instanceof Bindings\ClassBinding)
+            return $this->ResolveClassBinding($Binding);
         
-        $Reflection = $Binding->BoundTo();
-
-        $ConstructorInfo = $Reflection->getConstructor();
-        if($ConstructorInfo === null)
-            return $Reflection->newInstance();
-        
-        $ConstructorParameters = $ConstructorInfo->getParameters();
-
-        $ResolvedConstructorParameters = $this->ResolveConstructorParameters
-                ($Reflection, $ConstructorParameters, $Binding->GetConstantConstructorArgs());
-
-        return $Reflection->newInstanceArgs($ResolvedConstructorParameters);
+        if($Binding instanceof Bindings\ConstantBinding)
+            return $this->ResolveConstantBinding ($Binding);
     }
     
-    private function ResolveConstructorParameters(\ReflectionClass $Reflection, array $ConstructorParameters, 
-            array $ConstantConstructorParameters = array()) {
+    private function ResolveClassBinding(Bindings\ClassBinding $Binding) {
+        if($Binding->GetLifecycle()->IsResolved())
+            return $Binding->GetLifecycle()->GetInstance();
+        
+        $Binding->GetLifecycle()->ResolveInstanceFactory(
+                $this->CreateClassInstanceFactory($Binding));
+        
+        return $Binding->GetLifecycle()->GetInstance();
+    }
+    
+    private function ResolveConstantBinding(Bindings\ConstantBinding $Binding) {
+        return $Binding->BoundTo();
+    }
+    
+    private function CreateClassInstanceFactory(Bindings\ClassBinding $Binding) {
+        $Reflection = new \ReflectionClass($Binding->BoundTo());
+        
+        $ConstructorInfo = $Reflection->getConstructor();
+        $Factory = function () use(&$Binding, &$Reflection, &$ConstructorInfo) {
+            if($ConstructorInfo === null)
+                return $Reflection->newInstance();
+
+            $ConstructorParameters = $ConstructorInfo->getParameters();
+
+            $ResolvedConstructorParameters = $this->ResolveConstructorParameters
+                    ($Reflection, $ConstructorParameters, $Binding->GetConstantConstructorArgs());
+
+            return $Reflection->newInstanceArgs($ResolvedConstructorParameters);
+        };
+        
+        return $Factory;
+    }
+    
+    private function ResolveConstructorParameters(\ReflectionClass $Reflection, 
+            array $ConstructorParameters, array $ConstantConstructorParameters = array()) {
+        
         $ResolvedConstructorParameters = array();
         foreach ($ConstructorParameters as $ConstructorParameter) {
-            
             if(array_key_exists($ConstructorParameter->name, $ConstantConstructorParameters)) {
                 $ResolvedConstructorParameters[] = 
                         $ConstantConstructorParameters[$ConstructorParameter->name];
-                
                 continue;
             }
             
@@ -138,7 +167,8 @@ abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
                         'There is no defined parameter type or default value for constructor 
                             parameter: ' . $ConstructorParameter->name);
             
-            $MatchedBinding = $this->GetMatchedBinding($Reflection->getName(), $ParameterType);
+            $MatchedBinding = $this->GetMatchedBinding($Reflection->getName(), 
+                    $ParameterType->getName());
             if($MatchedBinding === null)
                 throw new Exceptions\UnresolveableClassException($Reflection->getName(), 
                         'Could not find a suitable binding for constructor parameter: ' . 

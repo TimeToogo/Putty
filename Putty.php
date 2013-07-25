@@ -3,9 +3,18 @@
 namespace Putty;
 
 PuttyRequireDirectory('Exceptions/*.php');
+
+PuttyRequire('Syntax/FluentConstrainedBindingSyntax.php');
 PuttyRequireDirectory('Syntax/*.php');
 
-PuttyRequire('Binding.php');
+PuttyRequire('Lifecycles/Lifecycle.php');
+PuttyRequireDirectory('Lifecycles/*.php');
+
+PuttyRequire('Bindings/Binding.php');
+PuttyRequire('Bindings/ConstrainedBinding.php');
+PuttyRequireDirectory('Bindings/*.php');
+
+PuttyRequire('PuttyModule.php');
 PuttyRequire('PuttyModule.php');
 PuttyRequire('PuttyContainer.php');
 

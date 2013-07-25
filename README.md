@@ -6,7 +6,7 @@ A simple and clean dependency injection framework for PHP inspired by C#'s Ninje
 Features
 ========
 - Simple yet versatile fluent binding syntax
-- Organise bindings into easy to use modules
+- Organise bindings into easy to manage modules
 - Create loosly coupled systems
 
 Installation
@@ -15,7 +15,7 @@ Clone repo to your project and simply `require 'Putty\Putty.php';`
 
 Your first Putty Module
 ======================
-Organise your bindings into their own modules
+Organise your bindings into their own modules:
 ```php
 class TransportationModule extends \Putty\PuttyModule {
     protected function InitializeBindings() {
@@ -38,7 +38,10 @@ class TransportationModule extends \Putty\PuttyModule {
         
         $this->Bind('IVehicleMaintainer')->To('Joe')
             ->WithConstructorArgument('EducationLevel', 'Year 10')
-            ->AsSingleton();
+            ->InSingletonLifecycle();
+		
+        $this->Bind('IMood')->ToConstant(new ShittyMood())
+            ->WhenInjectedExactlyInto('Joe');
     }
 }
 ```
