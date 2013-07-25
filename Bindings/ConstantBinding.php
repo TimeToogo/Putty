@@ -11,8 +11,7 @@ class ConstantBinding extends ConstrainedBinding {
             array $WhenInjectedIntoExactClasses = array()) {
         
         parent::__construct($ParentType, $BoundToConstantValue, new Lifecycles\Singleton(),
-                $WhenInjectedIntoParentClasses, 
-                $WhenInjectedIntoExactClasses);
+                $WhenInjectedIntoParentClasses, $WhenInjectedIntoExactClasses);
     }
     
     protected function SetBoundTo($BoundToConstantValue) {
