@@ -13,10 +13,6 @@ class ConstantBinding extends ConstrainedBinding {
         parent::__construct($ParentType, $BoundToConstantValue, new Lifecycles\Singleton(),
                 $WhenInjectedIntoParentClasses, 
                 $WhenInjectedIntoExactClasses);
-        
-        $this->GetLifecycle()->ResolveInstanceFactory(function () use(&$BoundToConstantValue) {
-            return $BoundToConstantValue;
-        });
     }
     
     protected function SetBoundTo($BoundToConstantValue) {
@@ -26,6 +22,15 @@ class ConstantBinding extends ConstrainedBinding {
                     'Constant value must be an instance of ' . $this->GetParentType());
         
         parent::SetBoundTo($BoundToConstantValue);
+    }
+    
+    public function SetLifecycle(Lifecycles\Lifecycle $Lifecycle) {
+        $BoundToConstantValue = $this->BoundTo();
+        $Lifecycle->ResolveInstanceFactory(function () use(&$BoundToConstantValue) {
+            return $BoundToConstantValue;
+        });
+        
+        parent::SetLifecycle($Lifecycle);
     }
 }
 
