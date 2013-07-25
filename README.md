@@ -1,7 +1,7 @@
 Putty
 =====
 
-A simple and clean dependency injection framework for PHP inspired by C#'s Ninject
+A clean and simple dependency injection framework for PHP inspired by C#'s Ninject
 
 Features
 ========
