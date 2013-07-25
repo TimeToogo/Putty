@@ -5,8 +5,7 @@ namespace Putty;
 use \Putty\Exceptions;
 
 abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
-    private $ClassBindings = array();
-    private $ConstantBindings = array();
+    private $Bindings = array();
     
     final public static function Instance() {
         static $Instance = null;
@@ -27,33 +26,20 @@ abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
             if(!($Module instanceof PuttyModule))
                 throw new Exceptions\InvalidModuleException();
             
-            foreach ($Module->GetClassBindings() as $Binding) {
-                $this->AddClassBinding($Binding);
-            }
-            
-            foreach ($Module->GetConstantBindings() as $ConstantBinding) {
-                $this->AddConstantBinding($ConstantBinding);
+            foreach ($Module->GetBindings() as $Binding) {
+                $this->AddBinding($Binding);
             }
         }
     }
-    
-    private function GetAllBindings() {
-        return array_merge($this->ClassBindings, $this->ConstantBindings);
-    }
 
-    private function AddClassBinding(Bindings\ClassBinding $ClassBinding) {
-        $this->VerifyNotAmbiguousBinding($ClassBinding);
-        $this->ClassBindings[] = $ClassBinding;
-    }
-    
-    private function AddConstantBinding(Bindings\ConstantBinding $ConstantBinding) {
-        $this->VerifyNotAmbiguousBinding($ConstantBinding);
-        $this->ConstantBindings[] = $ConstantBinding;
+    private function AddBinding(Bindings\Binding $Binding) {
+        $this->VerifyNotAmbiguousBinding($Binding);
+        $this->Bindings[] = $Binding;
     }
     
     private function VerifyNotAmbiguousBinding(Bindings\ConstrainedBinding $Binding) {
         $ParentName = $Binding->GetParentType();
-        foreach ($this->GetAllBindings() as $OtherBinding) {
+        foreach ($this->Bindings as $OtherBinding) {
             if($OtherBinding->GetParentType() === $ParentName) {
                 if(!$Binding->IsConstrained() && !$Binding->IsConstrained()){
                     throw new Exceptions\AmbiguousBindingsException(
@@ -65,7 +51,7 @@ abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
     
     private function GetMatchedBinding($Class, $ParentType) {
         $MatchedBinding = null;
-        foreach ($this->GetAllBindings() as $Binding) {
+        foreach ($this->Bindings as $Binding) {
             if($Binding->GetParentType() === $ParentType) {
                 if($Binding->Matches($Class)) {
                     $MatchedBinding = $Binding;
@@ -107,14 +93,6 @@ abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
     }
     
     private function ResolveBinding(Bindings\Binding $Binding) {
-        if($Binding instanceof Bindings\ClassBinding)
-            return $this->ResolveClassBinding($Binding);
-        
-        if($Binding instanceof Bindings\ConstantBinding)
-            return $this->ResolveConstantBinding ($Binding);
-    }
-    
-    private function ResolveClassBinding(Bindings\ClassBinding $Binding) {
         if($Binding->GetLifecycle()->IsResolved())
             return $Binding->GetLifecycle()->GetInstance();
         
@@ -122,10 +100,6 @@ abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
                 $this->CreateClassInstanceFactory($Binding));
         
         return $Binding->GetLifecycle()->GetInstance();
-    }
-    
-    private function ResolveConstantBinding(Bindings\ConstantBinding $Binding) {
-        return $Binding->BoundTo();
     }
     
     private function CreateClassInstanceFactory(Bindings\ClassBinding $Binding) {

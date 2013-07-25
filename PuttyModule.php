@@ -11,12 +11,8 @@ abstract class PuttyModule extends Syntax\FluentBindingSyntax {
     
     protected abstract function InitializeBindings();
     
-    public function GetClassBindings() {
-        return $this->ClassBindings;
-    }
-    
-    public function GetConstantBindings() {
-        return $this->ConstantBindings;
+    public function GetBindings() {
+        return $this->Bindings;
     }
 }
 

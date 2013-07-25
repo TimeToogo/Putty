@@ -5,26 +5,24 @@ namespace Putty\Syntax;
 use \Putty\Bindings;
 
 class FluentBindingToSyntax {
-    private $ClassBindings = array();
-    private $ConstantBindings = array();
+    private $Bindings = array();
     private $ParentType = null;
 
-    public function __construct(&$ClassBindings, &$ConstantBindings, $ParentType) {
-        $this->ClassBindings = &$ClassBindings;
-        $this->ConstantBindings = &$ConstantBindings;
+    public function __construct(&$Bindings, $ParentType) {
+        $this->Bindings = &$Bindings;
         $this->ParentType = $ParentType;
     }
     
     public function To($Class) {
         $Binding = new Bindings\ClassBinding($this->ParentType, $Class);
-        $this->ClassBindings[] = $Binding;
+        $this->Bindings[] = $Binding;
         
         return new FluentClassBindingSettingsSyntax($Binding);
     }
     
     public function ToConstant($Value) {
         $Binding = new Bindings\ConstantBinding($this->ParentType, $Value);
-        $this->ConstantBindings[] = $Binding;
+        $this->Bindings[] = $Binding;
         
         return new FluentConstantBindingSettingsSyntax($Binding);
     }

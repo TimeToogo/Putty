@@ -7,7 +7,6 @@ use \Putty\Lifecycles;
 
 class ClassBinding extends ConstrainedBinding {
     private $ConstantConstructorArgs = array();
-    private $Lifecycle = null;
     
     public function __construct($ParentType, $BoundTo, 
             array $ConstantConstructorArgs = array(),
@@ -16,14 +15,14 @@ class ClassBinding extends ConstrainedBinding {
             array $WhenInjectedIntoExactClasses = array()) {
         try
         {
-            parent::__construct($ParentType, $BoundTo, $WhenInjectedIntoParentClasses, 
+            if($Lifecycle === null)
+                $Lifecycle = new Lifecycles\Transient();
+            
+            parent::__construct($ParentType, $BoundTo, $Lifecycle,
+                    $WhenInjectedIntoParentClasses, 
                     $WhenInjectedIntoExactClasses);
             
             $this->SetConstantConstructorArgs($ConstantConstructorArgs);
-            
-            if($Lifecycle === null)
-                $Lifecycle = new Lifecycles\Transient();
-            $this->SetLifecycle($Lifecycle);
         }
         catch (ReflectionException $Exception) {
            throw new Exceptions\InvalidBindingException(null, $Exception);
@@ -52,13 +51,6 @@ class ClassBinding extends ConstrainedBinding {
     }
     public function AddConstantConstructorArgs($ParameterName, $Value) {
         $this->ConstantConstructorArgs[$ParameterName] = $Value;
-    }
-    
-    public function GetLifecycle() {
-        return $this->Lifecycle;
-    }
-    public function SetLifecycle(Lifecycles\Lifecycle $Lifecycle) {
-        $this->Lifecycle = $Lifecycle;
     }
 }
 

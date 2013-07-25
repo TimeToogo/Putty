@@ -5,11 +5,10 @@ namespace Putty\Syntax;
 use \Putty\Bindings;
 
 abstract class FluentBindingSyntax {
-    protected $ClassBindings = array();
-    protected $ConstantBindings = array();
+    protected $Bindings = array();
     
     public function Bind($ParentType) {
-        return new FluentBindingToSyntax($this->ClassBindings, $this->ConstantBindings, 
+        return new FluentBindingToSyntax($this->Bindings, 
                 $ParentType);
     }
 }
