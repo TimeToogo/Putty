@@ -3,7 +3,6 @@
 namespace Putty\Bindings;
 
 use \Putty\Exceptions;
-use \Putty\Lifecycles;
 
 abstract class ConstrainedBinding extends Binding{
     private $WhenInjectedIntoParentClasses = array();
