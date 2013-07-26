@@ -8,14 +8,12 @@ use \Putty\Lifecycles;
 abstract class Binding {
     private $ParentType;
     private $BoundTo;
-    private $Lifecycle;
-    
-    public function __construct($ParentType, $BoundTo, Lifecycles\Lifecycle $Lifecycle) {
+
+    public function __construct($ParentType, $BoundTo) {
         try
         {
             $this->SetParentType($ParentType);
             $this->SetBoundTo($BoundTo);
-            $this->SetLifecycle($Lifecycle);
         }
         catch (ReflectionException $Exception) {
            throw new Exceptions\InvalidBindingException(null, $Exception);
@@ -38,12 +36,33 @@ abstract class Binding {
         $this->BoundTo = $BoundTo;
     }
     
-    public function GetLifecycle() {
-        return $this->Lifecycle;
+    public abstract function RequiresResolution();
+    
+    public function GetResolutionRequirements() {
+        if(!$this->RequiresResolution())
+            throw new \LogicException('This binding does not require resolution');
+        
+        return $this->GenerateResolutionRequirements();
     }
-    public function SetLifecycle(Lifecycles\Lifecycle $Lifecycle) {
-        $this->Lifecycle = $Lifecycle;
+    protected abstract function GenerateResolutionRequirements();
+    
+    public function ResolveRequirements(BindingResolutionRequirements $ResolvedRequirements) {
+        if(!$this->RequiresResolution())
+            throw new \LogicException('This binding does not require resolution');
+        
+        $this->ResolveResolutionRequirements($ResolvedRequirements);
     }
+    protected abstract function ResolveResolutionRequirements
+            (BindingResolutionRequirements $ResolvedRequirements);
+    
+    public function GetInstance() {
+        if($this->RequiresResolution())
+            throw new \LogicException
+                    ('Binding cannot generate instance: Requirements are not resolved');
+        
+        return $this->GenerateInstance($this->ResolutionRequirements);
+    }
+    protected abstract function GenerateInstance();
 }
 
 ?>

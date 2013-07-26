@@ -3,14 +3,13 @@
 namespace Putty\Bindings;
 
 use \Putty\Exceptions;
-use \Putty\Lifecycles;
 
 class ConstantBinding extends ConstrainedBinding {    
     public function __construct($ParentType, $BoundToConstantValue,
             array $WhenInjectedIntoParentClasses = array(),
             array $WhenInjectedIntoExactClasses = array()) {
         
-        parent::__construct($ParentType, $BoundToConstantValue, new Lifecycles\Singleton(),
+        parent::__construct($ParentType, $BoundToConstantValue,
                 $WhenInjectedIntoParentClasses, $WhenInjectedIntoExactClasses);
     }
     
@@ -22,14 +21,22 @@ class ConstantBinding extends ConstrainedBinding {
         
         parent::SetBoundTo($BoundToConstantValue);
     }
-    
-    public function SetLifecycle(Lifecycles\Lifecycle $Lifecycle) {
-        $BoundToConstantValue = $this->BoundTo();
-        $Lifecycle->ResolveInstanceFactory(function () use(&$BoundToConstantValue) {
-            return $BoundToConstantValue;
-        });
+
+    public function RequiresResolution() {
+        return false;
+    }
+
+    protected function ResolveResolutionRequirements
+            (BindingResolutionRequirements $ResolvedRequirements) {
         
-        parent::SetLifecycle($Lifecycle);
+    }
+    
+    protected function GenerateResolutionRequirements() {
+        return null;
+    }
+    
+    protected function GenerateInstance() {
+        return $this->BoundTo();
     }
 }
 

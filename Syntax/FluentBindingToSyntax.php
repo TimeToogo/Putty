@@ -20,6 +20,13 @@ class FluentBindingToSyntax {
         return new FluentClassBindingSettingsSyntax($Binding);
     }
     
+    public function ToSelf() {
+        $Binding = new Bindings\SelfBinding($this->ParentType);
+        $this->Bindings[] = $Binding;
+        
+        return new FluentClassBindingSettingsSyntax($Binding);
+    }
+    
     public function ToConstant($Value) {
         $Binding = new Bindings\ConstantBinding($this->ParentType, $Value);
         $this->Bindings[] = $Binding;

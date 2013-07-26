@@ -10,11 +10,10 @@ abstract class ConstrainedBinding extends Binding{
     private $WhenInjectedIntoExactClasses = array();
     
     public function __construct($ParentType, $BoundTo,
-            Lifecycles\Lifecycle $Lifecycle,
             array $WhenInjectedIntoParentClasses = array(),
             array $WhenInjectedIntoExactClasses = array()) {
         
-        parent::__construct($ParentType, $BoundTo, $Lifecycle);
+        parent::__construct($ParentType, $BoundTo);
         $this->SetWhenInjectedInto($WhenInjectedIntoParentClasses);
         $this->SetWhenExactlyInjectedInto($WhenInjectedIntoExactClasses);
     }
