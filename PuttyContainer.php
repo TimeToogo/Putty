@@ -4,7 +4,9 @@ namespace Putty;
 
 use \Putty\Exceptions;
 
-abstract class PuttyContainer extends Syntax\ModuleRegistrationSyntax {
+abstract class PuttyContainer {
+    use Syntax\ModuleRegistrationSyntax;
+    
     private $BindingManager = null;
     private $CachedResolutions = array();
     

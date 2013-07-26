@@ -4,7 +4,7 @@ namespace Putty\Syntax;
 
 use \Putty\PuttyModule;
 
-abstract class ModuleRegistrationSyntax {
+trait ModuleRegistrationSyntax {
     protected $Modules = array();
     
     public function Register(PuttyModule $Module) {

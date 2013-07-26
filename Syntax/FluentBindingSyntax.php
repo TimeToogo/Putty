@@ -4,7 +4,7 @@ namespace Putty\Syntax;
 
 use \Putty\Bindings;
 
-abstract class FluentBindingSyntax {
+trait FluentBindingSyntax {
     protected $Bindings = array();
     
     public function Bind($ParentType) {

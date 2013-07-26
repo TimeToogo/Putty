@@ -4,7 +4,9 @@ namespace Putty;
 
 use \Putty\Syntax;
 
-abstract class PuttyModule extends Syntax\FluentBindingSyntax {
+abstract class PuttyModule {
+    use Syntax\FluentBindingSyntax;
+    
     final public function __construct() {
         $this->InitializeBindings();
     }
