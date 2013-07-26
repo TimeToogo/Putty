@@ -60,7 +60,7 @@ abstract class Binding {
             throw new \LogicException
                     ('Binding cannot generate instance: Requirements are not resolved');
         
-        return $this->GenerateInstance($this->ResolutionRequirements);
+        return $this->GenerateInstance();
     }
     protected abstract function GenerateInstance();
 }

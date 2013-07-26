@@ -39,11 +39,12 @@ abstract class PuttyContainer {
     public function Resolve($Type) {
         try
         {
-            $MatchedBinding = $this->BindingManager->GetMatchedBinding(null, $Class);
+            $MatchedBinding = $this->BindingManager->GetMatchedBinding(null, $Type);
             if($MatchedBinding !== null)
-                return $this->ResolveBinding($MatchedBinding);
+                return $this->BindingManager->ResolveBinding($MatchedBinding);
             
-            if($CachedResolutionBinding = $this->GetCachedResolution($Type))
+            $CachedResolutionBinding = $this->GetCachedResolution($Type);
+            if($CachedResolutionBinding !== null)
                 return $this->BindingManager->ResolveBinding($CachedResolutionBinding);
             
             $ClassBinding = new Bindings\SelfBinding($Type);
