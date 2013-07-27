@@ -8,6 +8,8 @@ Features
 - Simple yet versatile fluent binding syntax
 - Organise bindings into easy to manage modules
 - Create loosly coupled systems
+- Constructor injection (the best type of injection)
+- Instance lifecycles
 
 Installation
 ============
