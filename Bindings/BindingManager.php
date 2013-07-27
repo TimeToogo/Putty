@@ -28,6 +28,24 @@ class BindingManager {
         }
     }
     
+    public function GetAllMatchedBinding($Class, $ParentType) {
+        $MatchedBindings = array();
+        foreach ($this->Bindings as $Binding) {
+            $BindingParentType = $Binding->GetParentType();
+            if($BindingParentType === $ParentType
+                    || is_subclass_of($BindingParentType, $ParentType)) {
+                if($Binding->Matches($Class)) {
+                    $MatchedBindings[] = $Binding;
+                }
+                if ($Binding->ExactlyMatches($Class)) {
+                    $MatchedBindings[] = $Binding;
+                }
+            }
+        }
+        
+        return $MatchedBindings;
+    }
+    
     public function GetMatchedBinding($Class, $ParentType) {
         $MatchedBinding = null;
         foreach ($this->Bindings as $Binding) {

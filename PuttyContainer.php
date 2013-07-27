@@ -58,12 +58,30 @@ abstract class PuttyContainer {
         }
     }
     
+    public function ResolveAll(array $Types) {
+        $Resolutions = array();
+        foreach ($Types as $Type) {
+            $Resolutions[] = $this->Resolve($Type);
+        }
+        return $Resolutions;
+    }
+    
     private function GetCachedResolutionBinding($Type) {
         foreach ($this->CachedResolutionBindings as $CachedResolutionBinding) {
             if($CachedResolutionBinding->BoundTo() === $Type)
                 return $CachedResolutionBinding;
         }
         return null;
+    }
+    
+    public function GetAll($ParentType) {
+        $MatchedBindings = $this->BindingManager->GetAllMatchedBinding(null, $ParentType);
+        $Resolutions = array();
+        foreach ($MatchedBindings as $Binding) {
+            $Resolutions[] = $this->BindingManager->RemoveBinding($Binding);
+        }
+        
+        return $Resolutions;
     }
 }
 
