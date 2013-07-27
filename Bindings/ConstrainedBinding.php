@@ -4,7 +4,7 @@ namespace Putty\Bindings;
 
 use \Putty\Exceptions;
 
-abstract class ConstrainedBinding extends Binding{
+abstract class ConstrainedBinding extends Binding {
     private $WhenInjectedIntoParentClasses = array();
     private $WhenInjectedIntoExactClasses = array();
     

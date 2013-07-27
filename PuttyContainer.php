@@ -8,7 +8,7 @@ abstract class PuttyContainer {
     use Syntax\ModuleRegistrationSyntax;
     
     private $BindingManager = null;
-    private $CachedResolutions = array();
+    private $CachedResolutionBindings = array();
     
     final public static function Instance() {
         static $Instance = null;
@@ -43,23 +43,23 @@ abstract class PuttyContainer {
             if($MatchedBinding !== null)
                 return $this->BindingManager->ResolveBinding($MatchedBinding);
             
-            $CachedResolutionBinding = $this->GetCachedResolution($Type);
+            $CachedResolutionBinding = $this->GetCachedResolutionBinding($Type);
             if($CachedResolutionBinding !== null)
                 return $this->BindingManager->ResolveBinding($CachedResolutionBinding);
             
             $ClassBinding = new Bindings\SelfBinding($Type);
             $ResolvedInstance = $this->BindingManager->ResolveBinding($ClassBinding);
-            $this->CachedResolutions[] = $ClassBinding;
+            $this->CachedResolutionBindings[] = $ClassBinding;
             
             return $ResolvedInstance;
         }
-        catch (\InvalidArgumentException $Exception) {
-            throw new Exceptions\UnresolveableClassException($Class, null, $Exception);
+        catch (Exceptions\InvalidBindingException $Exception) {
+            throw new Exceptions\UnresolveableClassException($Type, null, $Exception);
         }
     }
     
-    private function GetCachedResolution($Type) {
-        foreach ($this->CachedResolutions as $CachedResolutionBinding) {
+    private function GetCachedResolutionBinding($Type) {
+        foreach ($this->CachedResolutionBindings as $CachedResolutionBinding) {
             if($CachedResolutionBinding->BoundTo() === $Type)
                 return $CachedResolutionBinding;
         }

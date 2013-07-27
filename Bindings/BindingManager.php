@@ -31,7 +31,9 @@ class BindingManager {
     public function GetMatchedBinding($Class, $ParentType) {
         $MatchedBinding = null;
         foreach ($this->Bindings as $Binding) {
-            if($Binding->GetParentType() === $ParentType) {
+            $BindingParentType = $Binding->GetParentType();
+            if($BindingParentType === $ParentType
+                    || is_subclass_of($BindingParentType, $ParentType)) {
                 if($Binding->Matches($Class)) {
                     $MatchedBinding = $Binding;
                 }
@@ -46,11 +48,19 @@ class BindingManager {
     }
     
     public function ResolveBinding(Binding $Binding) {
+        return $this->ResolveBindingRescursive($Binding);
+    }    
+    
+    private function ResolveBindingRescursive(Binding $Binding, array &$DependencyTrace = array()) {        
+        $this->VerifyNonCircularDependencies($DependencyTrace);
+        
         if(!$Binding->RequiresResolution())
             return $Binding->GetInstance();
         
         $ResolutionRequirements = $Binding->GetResolutionRequirements();
         foreach ($ResolutionRequirements->GetRequiredTypes() as $RequiredType) {
+            $DependencyTrace[] = $RequiredType->getName();
+            
             $MatchedBinding = $this->GetMatchedBinding($Binding->BoundTo(), 
                     $RequiredType->getName());
             if($MatchedBinding === null) {
@@ -58,8 +68,9 @@ class BindingManager {
                         'Could not find a suitable binding for constructor parameter: ' . 
                         $RequiredType->getName());
             }
-            $MatchedBindingInstanceFactory = function () use (&$MatchedBinding) {
-                return $this->ResolveBinding($MatchedBinding);  
+            $MatchedBindingInstanceFactory = function () use (&$MatchedBinding, 
+                    &$DependencyTrace) {
+                return $this->ResolveBindingRescursive($MatchedBinding, $DependencyTrace);  
             };
             $ResolutionRequirements->ResolveRequiredType($RequiredType, 
                     $MatchedBindingInstanceFactory);
@@ -67,6 +78,12 @@ class BindingManager {
         
         $Binding->ResolveRequirements($ResolutionRequirements);
         return $Binding->GetInstance();
+    }
+    
+    private function VerifyNonCircularDependencies (array $DependencyTrace) {
+        $HasCircularDependency = count(array_unique($DependencyTrace)) !== count($DependencyTrace);
+        if($HasCircularDependency)
+            throw new Exceptions\CircularDependencyException($DependencyTrace);
     }
 }
 

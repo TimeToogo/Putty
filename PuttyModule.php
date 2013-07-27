@@ -7,13 +7,12 @@ use \Putty\Syntax;
 abstract class PuttyModule {
     use Syntax\FluentBindingSyntax;
     
-    final public function __construct() {
-        $this->InitializeBindings();
-    }
+    final public function __construct() { }
     
     protected abstract function InitializeBindings();
     
     public function GetBindings() {
+        $this->InitializeBindings();
         return $this->Bindings;
     }
 }
