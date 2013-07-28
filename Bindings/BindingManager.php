@@ -69,15 +69,13 @@ class BindingManager {
         return $this->ResolveBindingRescursive($Binding);
     }    
     
-    private function ResolveBindingRescursive(Binding $Binding, array &$DependencyTrace = array()) {        
-        $this->VerifyNonCircularDependencies($DependencyTrace);
-        
-        if(!$Binding->RequiresResolution())
+    private function ResolveBindingRescursive(Binding $Binding) {
+        if(!$Binding->RequiresResolution()) {
             return $Binding->GetInstance();
+        }
         
         $ResolutionRequirements = $Binding->GetResolutionRequirements();
         foreach ($ResolutionRequirements->GetRequiredTypes() as $RequiredType) {
-            $DependencyTrace[] = $RequiredType->getName();
             
             $MatchedBinding = $this->GetMatchedBinding($Binding->BoundTo(), 
                     $RequiredType->getName());
@@ -86,9 +84,8 @@ class BindingManager {
                         'Could not find a suitable binding for constructor parameter: ' . 
                         $RequiredType->getName());
             }
-            $MatchedBindingInstanceFactory = function () use (&$MatchedBinding, 
-                    &$DependencyTrace) {
-                return $this->ResolveBindingRescursive($MatchedBinding, $DependencyTrace);  
+            $MatchedBindingInstanceFactory = function () use (&$MatchedBinding) {
+                return $this->ResolveBindingRescursive($MatchedBinding);  
             };
             $ResolutionRequirements->ResolveRequiredType($RequiredType, 
                     $MatchedBindingInstanceFactory);

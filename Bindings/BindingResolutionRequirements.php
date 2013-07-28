@@ -7,10 +7,7 @@ class BindingResolutionRequirements {
     private $RequiredTypeNames = array();
     private $ResolvedTypesDictionary = array();
     
-    public function AddRequiredType(\ReflectionClass $Type) {
-        if($this->IsRequired($Type))
-            throw new \LogicException('Supplied type already required');
-        
+    public function AddRequiredType(\ReflectionClass $Type) {        
         $this->RequiredTypes[] = $Type;
         $this->RequiredTypeNames[] = $Type->getName();
     }
