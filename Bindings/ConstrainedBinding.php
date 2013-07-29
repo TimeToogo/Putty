@@ -27,7 +27,7 @@ abstract class ConstrainedBinding extends Binding {
         }
     }
     public function AddWhenInjectedInto($ParentClass) {
-        $EnsureValidType = new \ReflectionClass($ParentClass);
+        $this->VerifyValidType($ParentClass);
         
         $this->WhenInjectedIntoParentClasses[] = $ParentClass;
     }
@@ -41,8 +41,9 @@ abstract class ConstrainedBinding extends Binding {
         }
     }
     public function AddWhenInjectedExactlyInto($ExactClass) {
-        $EnsureValidType = new \ReflectionClass($ExactClass);
-        if(!$EnsureValidType->isInstantiable())
+        $this->VerifyValidType($ExactClass);
+        $Type = new \ReflectionClass($ExactClass);
+        if(!$Type->isInstantiable())
             throw new Exceptions\InvalidBindingException($ExactClass . ' must be instantiable');
         $this->WhenInjectedIntoParentClasses[] = $ExactClass;
     }
@@ -74,6 +75,11 @@ abstract class ConstrainedBinding extends Binding {
         }
 
         return false;
+    }
+    
+    private function VerifyValidType($Type) {
+        if(!class_exists($Type) && !interface_exists($Type))
+            throw new \InvalidArgumentException($Type . ' is not valid type');
     }
 }
 
