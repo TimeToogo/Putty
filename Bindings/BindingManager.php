@@ -94,12 +94,6 @@ class BindingManager {
         $Binding->ResolveRequirements($ResolutionRequirements);
         return $Binding->GetInstance();
     }
-    
-    private function VerifyNonCircularDependencies (array $DependencyTrace) {
-        $HasCircularDependency = count(array_unique($DependencyTrace)) !== count($DependencyTrace);
-        if($HasCircularDependency)
-            throw new Exceptions\CircularDependencyException($DependencyTrace);
-    }
 }
 
 ?>

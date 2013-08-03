@@ -119,9 +119,9 @@ class ClassBinding extends ConstrainedBinding {
     
     private function CreateInstanceFactory(BindingResolutionRequirements $ResolvedRequirements) {
         $ConstructorParameters = $this->GetConstrutorParameters();
-        if($ConstructorParameters == null)
+        if(empty($ConstructorParameters))
             return function () {
-                $this->ClassReflection->newInstance();
+                return $this->ClassReflection->newInstance();
             };
         $ResolvedConstructorParameters = array();
         $FactoryIndexes = array();

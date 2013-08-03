@@ -36,7 +36,7 @@ abstract class PuttyContainer {
         }
     }
     
-    public function Resolve($Type) {
+    public function &Resolve($Type) {
         try
         {
             $MatchedBinding = $this->BindingManager->GetMatchedBinding(null, $Type);
