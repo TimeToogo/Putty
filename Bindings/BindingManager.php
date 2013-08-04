@@ -13,7 +13,7 @@ class BindingManager {
     }
     
     public function RemoveBinding(Binding $Binding) {
-        $this->Bindings = array_splice($this->Bindings, array_search($Binding, $this->Bindings), 1);
+        array_splice($this->Bindings, array_search($Binding, $this->Bindings), 1);
     }
     
     private function VerifyNotAmbiguousBinding(Binding $Binding) {
@@ -28,7 +28,7 @@ class BindingManager {
         }
     }
     
-    public function GetAllMatchedBinding($Class, $ParentType) {
+    public function GetAllMatchedBindings($Class, $ParentType) {
         $MatchedBindings = array();
         foreach ($this->Bindings as $Binding) {
             $BindingParentType = $Binding->GetParentType();
@@ -76,15 +76,15 @@ class BindingManager {
         
         $ResolutionRequirements = $Binding->GetResolutionRequirements();
         foreach ($ResolutionRequirements->GetRequiredTypes() as $RequiredType) {
-            
+            $QualifiedName = $this->Qualify($RequiredType->getName());
             $MatchedBinding = $this->GetMatchedBinding($Binding->BoundTo(), 
-                    $RequiredType->getName());
+                    $QualifiedName);
             if($MatchedBinding === null) {
                 throw new Exceptions\UnresolveableClassException($Binding->BoundTo(), 
                         'Could not find a suitable binding for constructor parameter: ' . 
-                        $RequiredType->getName());
+                        $QualifiedName);
             }
-            $MatchedBindingInstanceFactory = function () use (&$MatchedBinding) {
+            $MatchedBindingInstanceFactory = function () use ($MatchedBinding) {
                 return $this->ResolveBindingRescursive($MatchedBinding);  
             };
             $ResolutionRequirements->ResolveRequiredType($RequiredType, 
@@ -93,6 +93,13 @@ class BindingManager {
         
         $Binding->ResolveRequirements($ResolutionRequirements);
         return $Binding->GetInstance();
+    }
+    
+    private function Qualify($Type) {
+        if($Type[0] !== '\\')
+            $Type = '\\' . $Type;
+        
+        return $Type;
     }
 }
 

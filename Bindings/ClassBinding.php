@@ -59,22 +59,29 @@ class ClassBinding extends ConstrainedBinding {
     }
 
     protected function GenerateResolutionRequirements() {
-        $Requirements = new BindingResolutionRequirements();
-        $RequiredConstructorParameters = $this->GetRequiredConstrutorParameters();
-        if($RequiredConstructorParameters === null)
+        try
+        {
+            $Requirements = new BindingResolutionRequirements();
+            $RequiredConstructorParameters = $this->GetRequiredConstrutorParameters();
+            if($RequiredConstructorParameters === null)
+                return $Requirements;
+
+            foreach ($RequiredConstructorParameters as $ConstructorParameter) {
+                $ParameterType = $ConstructorParameter->getClass();
+                if($ParameterType === null)
+                    throw new Exceptions\UnresolveableClassException($this->BoundTo(), 
+                            'There is no defined parameter type or default value for constructor 
+                                parameter: ' . $ConstructorParameter->name);
+
+                $Requirements->AddRequiredType($ParameterType);
+            }
+
             return $Requirements;
-        
-        foreach ($RequiredConstructorParameters as $ConstructorParameter) {
-            $ParameterType = $ConstructorParameter->getClass();
-            if($ParameterType === null)
-                throw new Exceptions\UnresolveableClassException($this->BoundTo(), 
-                        'There is no defined parameter type or default value for constructor 
-                            parameter: ' . $ConstructorParameter->name);
-            
-            $Requirements->AddRequiredType($ParameterType);
         }
-        
-        return $Requirements;
+        catch (\ReflectionException $Exception) {
+            throw new Exceptions\UnresolveableClassException($this->BoundTo(), 
+                    $Exception->getMessage(), $Exception);
+        }
     }
 
     public function RequiresResolution() {
@@ -132,7 +139,7 @@ class ClassBinding extends ConstrainedBinding {
                 continue;
             }
             if($ConstructorParameter->isOptional())
-                continue;
+                break;
 
             $ParameterType = $ConstructorParameter->getClass();
             $TypeResolutionFactory = $ResolvedRequirements->GetTypeResolution($ParameterType);

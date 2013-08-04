@@ -75,7 +75,7 @@ abstract class PuttyContainer {
     }
     
     public function GetAll($ParentType) {
-        $MatchedBindings = $this->BindingManager->GetAllMatchedBinding(null, $ParentType);
+        $MatchedBindings = $this->BindingManager->GetAllMatchedBindings(null, $ParentType);
         $Resolutions = array();
         foreach ($MatchedBindings as $Binding) {
             $Resolutions[] = $this->BindingManager->RemoveBinding($Binding);
