@@ -138,9 +138,12 @@ class ClassBinding extends ConstrainedBinding {
                         $this->GetConstantConstructorArgs()[$ConstructorParameter->name];
                 continue;
             }
-            if($ConstructorParameter->isOptional())
-                break;
-
+            if($ConstructorParameter->isOptional()) {
+                $DefaultValue = $ConstructorParameter->getDefaultValue();
+                $ResolvedConstructorParameters[] = $DefaultValue;
+                continue;
+            }
+            
             $ParameterType = $ConstructorParameter->getClass();
             $TypeResolutionFactory = $ResolvedRequirements->GetTypeResolution($ParameterType);
             $ResolvedConstructorParameters[] = $TypeResolutionFactory;

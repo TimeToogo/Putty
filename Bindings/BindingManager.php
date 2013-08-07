@@ -37,7 +37,7 @@ class BindingManager {
                 if($Binding->Matches($Class)) {
                     $MatchedBindings[] = $Binding;
                 }
-                if ($Binding->ExactlyMatches($Class)) {
+                else if ($Binding->ExactlyMatches($Class)) {
                     $MatchedBindings[] = $Binding;
                 }
             }
