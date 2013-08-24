@@ -5,7 +5,6 @@ namespace Putty;
 use \Putty\Exceptions;
 
 abstract class PuttyContainer {
-    use Syntax\ModuleRegistrationSyntax;
     
     private $BindingManager = null;
     private $CachedResolutionBindings = array();
@@ -19,24 +18,18 @@ abstract class PuttyContainer {
     
     final private function __construct() {
         $this->BindingManager = new Bindings\BindingManager();
-        $this->Initialize();
+        $this->RegisterModules();
     }
 
     protected abstract function RegisterModules();
     
-    private function Initialize() {
-        $this->RegisterModules();
-        foreach ($this->Modules as $Module) {
-            if(!($Module instanceof PuttyModule))
-                throw new Exceptions\InvalidModuleException();
-            
-            foreach ($Module->GetBindings() as $Binding) {
-                $this->BindingManager->AddBinding($Binding);
-            }
+    protected function Register(PuttyModule $Module) {
+        foreach ($Module->GetBindings() as $Binding) {
+            $this->BindingManager->AddBinding($Binding);
         }
     }
     
-    public function &Resolve($Type) {
+    public function Resolve($Type) {
         try
         {
             $MatchedBinding = $this->BindingManager->GetMatchedBinding(null, $Type);
@@ -77,10 +70,8 @@ abstract class PuttyContainer {
     public function GetAll($ParentType) {
         $MatchedBindings = $this->BindingManager->GetAllMatchedBindings(null, $ParentType);
         $Resolutions = array();
-        
-        foreach ($MatchedBindings as $Binding) {
+        foreach ($MatchedBindings as $Binding) 
             $Resolutions[] = $this->BindingManager->ResolveBinding($Binding);
-        }
         
         return $Resolutions;
     }

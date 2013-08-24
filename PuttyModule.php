@@ -7,7 +7,7 @@ use \Putty\Syntax;
 abstract class PuttyModule {
     use Syntax\FluentBindingSyntax;
     
-    final public function __construct() { }
+    public function __construct() { }
     
     protected abstract function InitializeBindings();
     
