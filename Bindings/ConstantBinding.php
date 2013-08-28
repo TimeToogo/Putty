@@ -5,15 +5,17 @@ namespace Putty\Bindings;
 use \Putty\Exceptions;
 
 class ConstantBinding extends ConstrainedBinding {    
-    public function __construct($ParentType, $BoundToConstantValue,
+    public function __construct($ParentType, $BoundToConstantValue, $LazyLoad = false,
             array $WhenInjectedIntoParentClasses = array(),
             array $WhenInjectedIntoExactClasses = array()) {
         
-        parent::__construct($ParentType, $BoundToConstantValue,
+        parent::__construct($ParentType, $BoundToConstantValue, $LazyLoad,
                 $WhenInjectedIntoParentClasses, $WhenInjectedIntoExactClasses);
     }
     
     protected function SetBoundTo($BoundToConstantValue) {
+        if(!$this->IsInitialized())
+            return parent::SetBoundTo($BoundToConstantValue);
         $ConstantValueType = $this->GetParentType();
         if(!($BoundToConstantValue instanceof $ConstantValueType))
             throw new Exceptions\InvalidBindingException(
@@ -22,7 +24,7 @@ class ConstantBinding extends ConstrainedBinding {
         parent::SetBoundTo($BoundToConstantValue);
     }
 
-    public function RequiresResolution() {
+    public function BindingRequiresResolution() {
         return false;
     }
 

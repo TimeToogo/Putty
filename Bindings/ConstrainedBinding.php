@@ -5,42 +5,67 @@ namespace Putty\Bindings;
 use \Putty\Exceptions;
 
 abstract class ConstrainedBinding extends Binding {
+    private $StoredWhenInjectedIntoParentClasses = array();
+    private $StoredWhenInjectedIntoExactClasses = array();
+    
     private $WhenInjectedIntoParentClasses = array();
     private $WhenInjectedIntoExactClasses = array();
     
-    public function __construct($ParentType, $BoundTo,
+    public function __construct($ParentType, $BoundTo, $LazyLoad = false,
             array $WhenInjectedIntoParentClasses = array(),
             array $WhenInjectedIntoExactClasses = array()) {
         
-        parent::__construct($ParentType, $BoundTo);
-        $this->SetWhenInjectedInto($WhenInjectedIntoParentClasses);
-        $this->SetWhenExactlyInjectedInto($WhenInjectedIntoExactClasses);
+        $this->StoredWhenInjectedIntoParentClasses = $WhenInjectedIntoParentClasses;
+        $this->StoredWhenInjectedIntoExactClasses = $WhenInjectedIntoExactClasses;
+        
+        parent::__construct($ParentType, $BoundTo, $LazyLoad);
+    }
+    
+    protected function Initialize() {
+        parent::Initialize();
+        
+        $this->SetWhenInjectedInto($this->WhenInjectedIntoParentClasses);
+        $this->SetWhenExactlyInjectedInto($this->WhenInjectedIntoExactClasses);
     }
     
     public function WhenInjectedIntoParentClasses() {
+        if(!$this->IsInitialized())
+            return $this->StoredWhenInjectedIntoParentClasses;
         return $this->WhenInjectedIntoParentClasses;
     }
     public function SetWhenInjectedInto(array $ParentClasses) {
+        if(!$this->IsInitialized())
+            return $this->StoredWhenInjectedIntoParentClasses = $ParentClasses;
         $this->WhenInjectedIntoParentClasses = array();
         foreach ($ParentClasses as $ParentClass) {
             $this->AddWhenInjectedInto($ParentClass);
         }
     }
     public function AddWhenInjectedInto($ParentClass) {
+        if(!$this->IsInitialized())
+            return $this->StoredWhenInjectedIntoParentClasses[] = $ParentClasses;
         $this->VerifyValidType($ParentClass);
         
         $this->WhenInjectedIntoParentClasses[] = $ParentClass;
     }
     
     public function WhenInjectedIntoExactClasses() {
+        if(!$this->IsInitialized())
+            return $this->StoredWhenInjectedIntoExactClasses;
+        
         return $this->WhenInjectedIntoExactClasses;
     }
     public function SetWhenExactlyInjectedInto(array $ExactClasses) {
+        if(!$this->IsInitialized())
+            return $this->StoredWhenInjectedIntoExactClasses[] = $ExactClasses;
         foreach ($ExactClasses as $ExactClass) {
             $this->AddWhenInjectedExactlyInto($ExactClass);
         }
     }
     public function AddWhenInjectedExactlyInto($ExactClass) {
+        if(!$this->IsInitialized())
+            return $this->StoredWhenInjectedIntoExactClasses[] = $ExactClass;
+        
         $this->VerifyValidType($ExactClass);
         $Type = new \ReflectionClass($ExactClass);
         if(!$Type->isInstantiable())
@@ -49,6 +74,9 @@ abstract class ConstrainedBinding extends Binding {
     }
     
     public function IsConstrained() {
+        if(!$this->IsInitialized())
+            return (count($this->StoredWhenInjectedIntoParentClasses) !== 0
+                || count($this->StoredWhenInjectedIntoExactClasses) !== 0);
         return (count($this->WhenInjectedIntoParentClasses) !== 0
                 || count($this->WhenInjectedIntoExactClasses) !== 0);
     }
@@ -56,7 +84,7 @@ abstract class ConstrainedBinding extends Binding {
         if(!$this->IsConstrained())
             return true;
         
-        foreach ($this->WhenInjectedIntoExactClasses as $ExactClass) {
+        foreach ($this->WhenInjectedIntoExactClasses() as $ExactClass) {
             if($ExactClass === $Class)
                 return true;
         }
@@ -64,11 +92,12 @@ abstract class ConstrainedBinding extends Binding {
         return false;
     }
     public function Matches($Class) {
+        $this->VerifyInitialized();
         if(!$this->IsConstrained())
             return true;
         
         $Reflection = new \ReflectionClass($Class);
-        foreach ($this->WhenInjectedIntoParentClasses as $ParentClass) {
+        foreach ($this->WhenInjectedIntoParentClasses() as $ParentClass) {
             if($Reflection->isSubclassOf($ParentClass) || 
                     $Class === $ParentClass)
                 return true;

@@ -5,11 +5,11 @@ namespace Putty\Syntax;
 use \Putty\Bindings;
 
 trait FluentBindingSyntax {
-    protected $Bindings = array();
+    private $Bindings = array();
+    private $LazyLoad = false;
     
     public function Bind($ParentType) {
-        return new FluentBindingToSyntax($this->Bindings, 
-                $ParentType);
+        return new FluentBindingToSyntax($this->Bindings, $ParentType, $this->LazyLoad);
     }
 }
 ?>

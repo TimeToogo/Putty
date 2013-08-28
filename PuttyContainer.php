@@ -6,6 +6,8 @@ use \Putty\Exceptions;
 
 abstract class PuttyContainer {
     
+    protected $LazyLoadBindings = false;
+    
     private $BindingManager = null;
     private $CachedResolutionBindings = array();
     
@@ -24,7 +26,7 @@ abstract class PuttyContainer {
     protected abstract function RegisterModules();
     
     protected function Register(PuttyModule $Module) {
-        foreach ($Module->GetBindings() as $Binding) {
+        foreach ($Module->GetBindings($this->LazyLoadBindings) as $Binding) {
             $this->BindingManager->AddBinding($Binding);
         }
     }
@@ -32,7 +34,7 @@ abstract class PuttyContainer {
     public function Resolve($Type) {
         try
         {
-            $MatchedBinding = $this->BindingManager->GetMatchedBinding(null, $Type);
+            $MatchedBinding = $this->BindingManager->FindExactBinding($Type);
             if($MatchedBinding !== null)
                 return $this->BindingManager->ResolveBinding($MatchedBinding);
             
@@ -67,8 +69,8 @@ abstract class PuttyContainer {
         return null;
     }
     
-    public function GetAll($ParentType) {
-        $MatchedBindings = $this->BindingManager->GetAllMatchedBindings(null, $ParentType);
+    public function GetAll($ParentType, $Subclasses = false) {
+        $MatchedBindings = $this->BindingManager->GetAllMatchedBindings(null, $ParentType, $Subclasses);
         $Resolutions = array();
         foreach ($MatchedBindings as $Binding) 
             $Resolutions[] = $this->BindingManager->ResolveBinding($Binding);
