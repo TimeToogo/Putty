@@ -7,8 +7,6 @@ use \Putty\Syntax;
 abstract class PuttyModule {
     use Syntax\FluentBindingSyntax;
     
-    private $LazyLoad;
-    
     public function __construct() { }
     
     protected abstract function InitializeBindings();

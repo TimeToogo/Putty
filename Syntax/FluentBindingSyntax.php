@@ -2,8 +2,6 @@
 
 namespace Putty\Syntax;
 
-use \Putty\Bindings;
-
 trait FluentBindingSyntax {
     private $Bindings = array();
     private $LazyLoad = false;
