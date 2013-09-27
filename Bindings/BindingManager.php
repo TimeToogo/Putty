@@ -3,6 +3,7 @@
 namespace Putty\Bindings;
 
 use \Putty\Exceptions;
+use \Putty\Cache\ICache;
 
 class BindingManager {
     private $Bindings = array();

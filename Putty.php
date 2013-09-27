@@ -10,6 +10,9 @@ PuttyRequireDirectory('Syntax/*.php');
 PuttyRequire('Lifecycles/Lifecycle.php');
 PuttyRequireDirectory('Lifecycles/*.php');
 
+PuttyRequire('Cache/ICache.php');
+PuttyRequireDirectory('Cache/*.php');
+
 PuttyRequire('Bindings/Binding.php');
 PuttyRequire('Bindings/ConstrainedBinding.php');
 PuttyRequireDirectory('Bindings/*.php');
