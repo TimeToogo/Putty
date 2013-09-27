@@ -18,13 +18,6 @@ Installation
 ============
 Clone repo to your project and simply `require 'Putty\Putty.php';`
 
-The impractical example
-======================
-Putty allows you effectively implement IOC with no dependency to the container:
-```php
-
-```
-
 Your first Putty Module
 ======================
 Organise your bindings into their own modules:
