@@ -7,13 +7,23 @@ Features
 ========
 - Simple yet versatile fluent binding syntax
 - Organise bindings into easy to manage modules
-- Create loosly coupled systems
+- Promotes loosly coupled systems
+- Classes have no dependency to Putty
 - Constructor injection (the best type of injection)
-- Instance lifecycles
+- Flexible instance lifecycles
+- Optional lazy loading for bindings
+- Customizable binding cache
 
 Installation
 ============
 Clone repo to your project and simply `require 'Putty\Putty.php';`
+
+The impractical example
+======================
+Putty allows you effectively implement IOC with no dependency to the container:
+```php
+
+```
 
 Your first Putty Module
 ======================
