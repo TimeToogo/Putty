@@ -60,12 +60,16 @@ class BindingManager {
         return $MatchedBinding;
     }
     
+    private $ExactBindingCache = array();
     public function FindExactBinding($ParentType) {
+        $ParentType = $this->Qualify($ParentType);
+        if(isset($this->ExactBindingCache[$ParentType]))
+            return $this->ExactBindingCache[$ParentType];
         foreach ($this->Bindings as $Binding) {
-            $BindingParentType = $Binding->GetParentType();
-            if($BindingParentType === $ParentType && $Binding->ExactlyMatches(null))
+            if($ParentType === $Binding->GetParentType() && $Binding->ExactlyMatches(null)) {
+                $this->ExactBindingCache[$ParentType] = $Binding;
                 return $Binding;
-                
+            }                
         }
         return null;
     }

@@ -9,7 +9,11 @@ trait FluentBindingSyntax {
     
     
     public function Bind($ParentType) {
-        return new FluentBindingToSyntax($this->Bindings, $ParentType, $this->LazyLoad);
+        return new FluentBindingToSyntax(
+                $this->Bindings, 
+                $ParentType, 
+                $this->LazyLoad,
+                $this->DefaultLifecycle);
     }
 }
 ?>

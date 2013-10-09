@@ -61,18 +61,18 @@ abstract class PuttyContainer {
     public function Resolve($Type) {
         try
         {
-            $MatchedBinding = $this->BindingManager->FindExactBinding($Type);
-            if($MatchedBinding !== null)
-                return $this->BindingManager->ResolveBinding($MatchedBinding);
-            
             $CachedResolutionBinding = $this->GetCachedResolutionBinding($Type);
             if($CachedResolutionBinding !== null)
                 return $this->BindingManager->ResolveBinding($CachedResolutionBinding);
             
-            $ClassBinding = new Bindings\SelfBinding($Type);
-            $ResolvedInstance = $this->BindingManager->ResolveBinding($ClassBinding);
-            $this->CacheResolutionBinding($ClassBinding);
+            $MatchedBinding = $this->BindingManager->FindExactBinding($Type);
+            if($MatchedBinding === null) {
+                $MatchedBinding = new Bindings\SelfBinding($Type);
+            }
             
+            $ResolvedInstance = $this->BindingManager->ResolveBinding($MatchedBinding);
+            $this->CacheResolutionBinding($MatchedBinding, $Type);
+                
             return $ResolvedInstance;
         }
         catch (Exceptions\InvalidBindingException $Exception) {
@@ -96,8 +96,8 @@ abstract class PuttyContainer {
         return $this->RetreiveFromCache($BindingCacheKey);
     }
     
-    private function CacheResolutionBinding(Bindings\Binding $Binding) {
-        $BindingCacheKey = $this->ResolutionBindingsCacheKey . $Binding->BoundTo();
+    private function CacheResolutionBinding(Bindings\Binding $Binding, $Type) {
+        $BindingCacheKey = $this->ResolutionBindingsCacheKey . $Type;
         
         $this->SaveToCache($BindingCacheKey, $Binding);
     }

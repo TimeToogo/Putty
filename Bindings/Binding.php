@@ -62,6 +62,13 @@ abstract class Binding {
         
         return $this->BoundTo;
     }
+    final public function BoundToClass() {
+        $BoundTo = $this->BoundTo();
+        if(!is_string($BoundTo))
+            return get_class($BoundTo);
+        else
+            return $BoundTo;
+    }
     protected function SetBoundTo($BoundTo) {
         if(!$this->IsInitialized())
             return $this->StoredBoundTo = $BoundTo;
