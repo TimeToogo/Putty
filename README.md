@@ -55,7 +55,7 @@ Configuring your Putty Container
 ===============================
 Simply extend the PuttyContainer and register your modules
 ```php
-class MyContainer extends \Putty\PuttyContainer{
+class MyContainer extends \Putty\PuttyContainer {
     protected function RegisterModules() {
         $this->Register(new TransportationModule());
         $this->Register(new BillingModule());
@@ -68,8 +68,8 @@ Up and running
 ==============
 Now your IOC container is ready to putty your project together...
 ```php
-class PuttyControllerFactory extends IControllerFactory {
-    function Resolve($Controller) {
+class PuttyControllerFactory implements IControllerFactory {
+    public function Resolve($Controller) {
         return MyContainer::Instance()->Resolve($Controller);
     }
 }
